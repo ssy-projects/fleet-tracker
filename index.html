@@ -875,31 +875,160 @@ function openP(idx){
       ${v.hasPOP?`<div class="pr"><span class="pk">POP Declare By</span><span class="pv mono am">${v.popDeclDate||'—'}</span></div>`:''}
       <div class="pr"><span class="pk">Redelivery Notice</span><span class="pv mono">${v.notice||'—'}</span></div>
     </div>
-    <div class="ps"><div class="pst">✏️ Edit</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-        <div><div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">SIZE</div><select class="ei" id="ef-size">${SIZES.map(sz=>`<option ${v.size===sz?'selected':''}>${sz}</option>`).join('')}</select></div>
-        <div><div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">TYPE</div><select class="ei" id="ef-type">${TYPES.map(t=>`<option ${v.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
-        <div><div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">HIRE ($/day)</div><input class="ei" id="ef-hire" type="number" value="${v.hire||''}"></div>
-        <div><div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">OWNER</div><input class="ei" id="ef-owner" value="${v.owner||''}"></div>
-        <div style="grid-column:1/-1"><div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">CHARTERER</div><input class="ei" id="ef-charterer" value="${v.charterer||''}"></div>
+    <div class="ps">
+      <div class="pst" style="display:flex;align-items:center;justify-content:space-between">
+        <span>✏️ Edit Details</span>
+        <span style="font-size:8px;font-weight:400;color:var(--muted)">Changes sync to Google Sheets</span>
       </div>
-      <div style="margin-bottom:8px"><div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">NOTES / REMARKS</div><textarea class="ei" id="ef-notes" rows="3" style="resize:vertical">${v.notes||''}</textarea></div>
-      <div style="display:flex;gap:6px"><button class="sv-btn" onclick="saveE(${idx})">✓ Save</button><button class="cl-btn" onclick="openP(${idx})">↺ Reset</button></div>
-      <div id="sv-msg" style="font-size:10px;color:var(--ok);margin-top:5px;min-height:14px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">SIZE</div>
+          <select class="ei" id="ef-size">${SIZES.map(sz=>`<option ${v.size===sz?'selected':''}>${sz}</option>`).join('')}</select>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">TYPE</div>
+          <select class="ei" id="ef-type">${TYPES.map(t=>`<option ${v.type===t?'selected':''}>${t}</option>`).join('')}</select>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">FIRM HIRE ($/day)</div>
+          <input class="ei" id="ef-hire" type="number" value="${v.hire||''}" placeholder="e.g. 24000">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">1ST OPT HIRE ($/day)</div>
+          <input class="ei" id="ef-opt1" type="number" value="${v.opt1hire||''}" placeholder="—">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">2ND OPT HIRE ($/day)</div>
+          <input class="ei" id="ef-opt2" type="number" value="${v.opt2hire||''}" placeholder="—">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">3RD OPT HIRE ($/day)</div>
+          <input class="ei" id="ef-opt3" type="number" value="${v.opt3hire||''}" placeholder="—">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">OWNER</div>
+          <input class="ei" id="ef-owner" value="${v.owner||''}" placeholder="Owner name">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">CHARTERER</div>
+          <input class="ei" id="ef-charterer" value="${v.charterer||''}" placeholder="Charterer name">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">FINANCIER</div>
+          <input class="ei" id="ef-financier" value="${v.financier||''}" placeholder="Bank / financier">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">CHARTER DURATION</div>
+          <input class="ei" id="ef-duration" value="${v.duration||''}" placeholder="e.g. 5Y+1Y+1Y">
+        </div>
+        <div style="grid-column:1/-1">
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">REDELIVERY NOTICE (days)</div>
+          <input class="ei" id="ef-notice" value="${v.notice||''}" placeholder="e.g. 60/45/30/15">
+        </div>
+        <div style="grid-column:1/-1">
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">CHARTER CHAIN</div>
+          <input class="ei" id="ef-chain" value="${v.chain||''}" placeholder="e.g. Owner - SSY NP - Charterer">
+        </div>
+        <div style="grid-column:1/-1">
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">NOTES / REMARKS (local only)</div>
+          <textarea class="ei" id="ef-notes" rows="3" style="resize:vertical" placeholder="Internal notes — not synced to sheet">${v.notes||''}</textarea>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="sv-btn" onclick="saveE(${idx})" style="display:flex;align-items:center;gap:5px">
+          <span>✓</span> Save &amp; Sync to Sheets
+        </button>
+        <button class="cl-btn" onclick="openP(${idx})">↺ Reset</button>
+      </div>
+      <div id="sv-msg" style="font-size:10px;margin-top:6px;min-height:16px"></div>
     </div>`;
   document.getElementById('det-pan').classList.add('open');
   document.getElementById('det-ov').classList.add('open');
 }
-function saveE(idx){
+async function saveE(idx){
   const v=AV.find(x=>x.idx===idx);if(!v)return;
-  v.size=document.getElementById('ef-size').value||v.size;
-  v.type=document.getElementById('ef-type').value||v.type;
-  v.hire=Number(document.getElementById('ef-hire').value)||v.hire;
-  v.owner=document.getElementById('ef-owner').value.trim()||v.owner;
-  v.charterer=document.getElementById('ef-charterer').value.trim()||v.charterer;
-  v.notes=document.getElementById('ef-notes').value.trim();
-  const m=document.getElementById('sv-msg');if(m){m.textContent='✓ Saved';setTimeout(()=>{if(m)m.textContent='';},2000);}
-  popDDs();applyF();
+
+  // Collect changed fields from the form
+  const fields={};
+  const get=id=>document.getElementById(id);
+
+  const newSize      = get('ef-size')?.value      || v.size;
+  const newType      = get('ef-type')?.value      || v.type;
+  const newHire      = parseFloat(get('ef-hire')?.value)  || v.hire;
+  const newOpt1      = parseFloat(get('ef-opt1')?.value)  || v.opt1hire || null;
+  const newOpt2      = parseFloat(get('ef-opt2')?.value)  || v.opt2hire || null;
+  const newOpt3      = parseFloat(get('ef-opt3')?.value)  || v.opt3hire || null;
+  const newOwner     = get('ef-owner')?.value.trim()     || v.owner;
+  const newCharterer = get('ef-charterer')?.value.trim() || v.charterer;
+  const newFinancier = get('ef-financier')?.value.trim() || v.financier;
+  const newNotice    = get('ef-notice')?.value.trim()    || v.notice;
+  const newChain     = get('ef-chain')?.value.trim()     || v.chain;
+  const newDuration  = get('ef-duration')?.value.trim()  || v.duration;
+  const newNotes     = get('ef-notes')?.value.trim()     || '';
+
+  if(newSize      !== v.size)       fields.size       = newSize;
+  if(newType      !== v.type)       fields.type       = newType;
+  if(newHire      !== v.hire)       fields.hire       = newHire;
+  if(newOpt1      !== v.opt1hire)   fields.opt1hire   = newOpt1;
+  if(newOpt2      !== v.opt2hire)   fields.opt2hire   = newOpt2;
+  if(newOpt3      !== v.opt3hire)   fields.opt3hire   = newOpt3;
+  if(newOwner     !== v.owner)      fields.owner      = newOwner;
+  if(newCharterer !== v.charterer)  fields.charterer  = newCharterer;
+  if(newFinancier !== v.financier)  fields.financier  = newFinancier;
+  if(newNotice    !== v.notice)     fields.notice     = newNotice;
+  if(newChain     !== v.chain)      fields.chain      = newChain;
+  if(newDuration  !== v.duration)   fields.duration   = newDuration;
+
+  // Update local state immediately (optimistic UI)
+  Object.assign(v, {
+    size:newSize, type:newType, hire:newHire,
+    opt1hire:newOpt1, opt2hire:newOpt2, opt3hire:newOpt3,
+    owner:newOwner, charterer:newCharterer, financier:newFinancier,
+    notice:newNotice, chain:newChain, duration:newDuration, notes:newNotes
+  });
+
+  const msg = document.getElementById('sv-msg');
+  const setMsg = (txt,col)=>{ if(msg){ msg.textContent=txt; msg.style.color=col||'var(--ok)'; }};
+
+  // If nothing changed, just close
+  if(Object.keys(fields).length===0){
+    setMsg('No changes to save.','var(--muted)');
+    setTimeout(()=>setMsg(''),2000);
+    popDDs(); applyF(); return;
+  }
+
+  // Try to write back to Google Sheets
+  setMsg('⏳ Saving to Google Sheets…','var(--watch)');
+
+  try {
+    const res = await fetch(SHEETS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        action: 'update',
+        vesselName: v.name,
+        sn: v.sn,
+        fields: fields
+      })
+    });
+
+    const json = await res.json();
+
+    if(json.error){
+      throw new Error(json.message||'Unknown error from Apps Script');
+    }
+
+    setMsg(`✅ Saved ${json.fieldsUpdated} field${json.fieldsUpdated!==1?'s':''} to Google Sheets`,'var(--ok)');
+    setTimeout(()=>setMsg(''),4000);
+
+  } catch(err){
+    // Write-back failed — data already saved locally, warn user
+    console.warn('Sheet write-back failed:', err.message);
+    setMsg('⚠ Saved locally. Sheet sync failed: '+err.message,'var(--watch)');
+    setTimeout(()=>setMsg(''),6000);
+  }
+
+  popDDs(); applyF();
 }
 function closeP(){document.getElementById('det-pan').classList.remove('open');document.getElementById('det-ov').classList.remove('open');}
 
