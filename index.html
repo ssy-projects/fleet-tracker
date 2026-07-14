@@ -243,6 +243,7 @@ footer{padding:10px 20px;border-top:1px solid var(--border);font-size:10px;color
 .ld{width:7px;height:7px;border-radius:50%;}
 
 @media(max-width:768px){.cal-grid{grid-template-columns:repeat(3,1fr);}#det-pan{width:100%;}}
+.af-label{font-size:9px;color:var(--muted);font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.4px;}
 </style>
 </head>
 <body>
@@ -271,6 +272,7 @@ footer{padding:10px 20px;border-top:1px solid var(--border);font-size:10px;color
     <button class="hbtn gold" id="tb-dash" onclick="switchTab('dash')">📊 Dashboard</button>
     <button class="hbtn" id="tb-charter" onclick="switchTab('charter')">📋 Charter Info</button>
     <button class="hbtn" onclick="refreshData()">↻ Refresh</button>
+    <button class="hbtn" style="background:var(--gold);color:var(--navy);font-weight:700;border-color:var(--gold)" onclick="openAddFixture()">+ Add Fixture</button>
     <button class="hbtn" onclick="doLogout()">Sign Out</button>
   </div>
 </header>
@@ -360,6 +362,155 @@ footer{padding:10px 20px;border-top:1px solid var(--border);font-size:10px;color
   <div class="ci-grid" id="ci-grid"></div>
 </div>
 
+
+<!-- ADD FIXTURE MODAL -->
+<div id="af-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,40,.5);z-index:300;backdrop-filter:blur(3px);overflow-y:auto;padding:40px 20px;" onclick="if(event.target===this)closeAddFixture()">
+  <div style="background:#fff;border-radius:12px;max-width:620px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.2);overflow:hidden;">
+    <div style="background:var(--navy);padding:18px 22px;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--gold);letter-spacing:.5px">+ ADD NEW FIXTURE</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;letter-spacing:.5px;text-transform:uppercase">Will be added to Google Sheets</div>
+      </div>
+      <button onclick="closeAddFixture()" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:14px;">✕</button>
+    </div>
+    <div style="padding:20px 22px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+
+        <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;padding-bottom:4px;border-bottom:2px solid var(--border);margin-bottom:2px">Vessel Details</div>
+
+        <div style="grid-column:1/-1">
+          <div class="af-label">Vessel Name *</div>
+          <input class="ei" id="af-name" placeholder="e.g. MV Pacific Star" style="font-size:13px;font-weight:600;">
+        </div>
+        <div>
+          <div class="af-label">Type *</div>
+          <select class="ei" id="af-type">
+            <option value="">Select type…</option>
+            <option>Bulk Carrier</option><option>Product</option><option>Crude</option>
+            <option>Chemical</option><option>LPG</option><option>LNG</option>
+            <option>Container</option><option>Car Carrier</option><option>Offshore</option><option>Others</option>
+          </select>
+        </div>
+        <div>
+          <div class="af-label">Size *</div>
+          <select class="ei" id="af-size">
+            <option value="">Select size…</option>
+            <option>HDY</option><option>HMX</option><option>SMX</option><option>UMX</option>
+            <option>PMX</option><option>KMX</option><option>PPMX</option><option>Baby-Cape</option>
+            <option>Cape</option><option>NCM</option><option>VLOC</option><option>Mini-Tanker</option>
+            <option>MR1</option><option>MR2</option><option>LR1</option><option>LR2</option>
+            <option>Aframax</option><option>Suezmax</option><option>VLCC</option>
+            <option>Feeder</option><option>Panamax Box</option><option>Mega Box</option>
+            <option>VLGC</option><option>VLAC</option><option>PCTC</option><option>Others</option>
+          </select>
+        </div>
+        <div>
+          <div class="af-label">DWT (MT)</div>
+          <input class="ei" id="af-dwt" type="number" placeholder="e.g. 180000">
+        </div>
+        <div>
+          <div class="af-label">Built (DD/MM/YYYY)</div>
+          <input class="ei" id="af-built" placeholder="e.g. 14/06/2012">
+        </div>
+        <div>
+          <div class="af-label">Builder Yard</div>
+          <input class="ei" id="af-builder" placeholder="e.g. SWS">
+        </div>
+        <div>
+          <div class="af-label">Financier / Bank</div>
+          <input class="ei" id="af-financier" placeholder="e.g. SMBC Tokyo">
+        </div>
+
+        <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;padding-bottom:4px;border-bottom:2px solid var(--border);margin-top:8px;margin-bottom:2px">Charter Parties</div>
+
+        <div>
+          <div class="af-label">Owner *</div>
+          <input class="ei" id="af-owner" placeholder="Owner name">
+        </div>
+        <div>
+          <div class="af-label">Charterer *</div>
+          <input class="ei" id="af-charterer" placeholder="Charterer name">
+        </div>
+        <div style="grid-column:1/-1">
+          <div class="af-label">Charter Chain</div>
+          <input class="ei" id="af-chain" placeholder="e.g. Owner - SSY NP - Charterer">
+        </div>
+
+        <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;padding-bottom:4px;border-bottom:2px solid var(--border);margin-top:8px;margin-bottom:2px">Charter Dates & Rates</div>
+
+        <div>
+          <div class="af-label">Delivery Date (DD Mon YYYY)</div>
+          <input class="ei" id="af-delivery" placeholder="e.g. 01 Mar 2026">
+        </div>
+        <div>
+          <div class="af-label">Delivery Time (GMT)</div>
+          <input class="ei" id="af-deliv-time" placeholder="e.g. 09:00 GMT">
+        </div>
+        <div>
+          <div class="af-label">Charter Duration</div>
+          <input class="ei" id="af-duration" placeholder="e.g. 5Y+1Y+1Y">
+        </div>
+        <div>
+          <div class="af-label">Firm Hire Rate ($/day) *</div>
+          <input class="ei" id="af-hire" type="number" placeholder="e.g. 18000">
+        </div>
+        <div>
+          <div class="af-label">1st Opt Hire ($/day)</div>
+          <input class="ei" id="af-opt1" type="number" placeholder="—">
+        </div>
+        <div>
+          <div class="af-label">2nd Opt Hire ($/day)</div>
+          <input class="ei" id="af-opt2" type="number" placeholder="—">
+        </div>
+
+        <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;padding-bottom:4px;border-bottom:2px solid var(--border);margin-top:8px;margin-bottom:2px">Redelivery</div>
+
+        <div>
+          <div class="af-label">Min Redelivery (DD Mon YYYY)</div>
+          <input class="ei" id="af-min" placeholder="e.g. 01 Mar 2031">
+        </div>
+        <div>
+          <div class="af-label">Min Redelivery Time (GMT)</div>
+          <input class="ei" id="af-min-time" placeholder="e.g. 09:00 GMT">
+        </div>
+        <div>
+          <div class="af-label">Max Redelivery (DD Mon YYYY)</div>
+          <input class="ei" id="af-max" placeholder="e.g. 01 Sep 2031 or Evergreen">
+        </div>
+        <div>
+          <div class="af-label">Redelivery Notice</div>
+          <input class="ei" id="af-notice" placeholder="e.g. 60/45/30/15">
+        </div>
+
+        <div style="grid-column:1/-1;font-size:10px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.8px;padding-bottom:4px;border-bottom:2px solid var(--border);margin-top:8px;margin-bottom:2px">Options &amp; Declarations</div>
+
+        <div style="grid-column:1/-1">
+          <div class="af-label">Period Opt. Declaration Deadline (DD Mon YYYY)</div>
+          <input class="ei" id="af-per-opt" placeholder="e.g. 01 Dec 2030">
+        </div>
+        <div>
+          <div class="af-label">Purchase Option (POP)?</div>
+          <select class="ei" id="af-pop" onchange="document.getElementById('af-pop-decl-wrap').style.display=this.value==='yes'?'':'none'">
+            <option value="no">No</option>
+            <option value="yes">Yes</option>
+          </select>
+        </div>
+        <div id="af-pop-decl-wrap" style="display:none">
+          <div class="af-label">POP Declare By (DD Mon YYYY)</div>
+          <input class="ei" id="af-pop-decl" placeholder="e.g. 01 Jun 2030">
+        </div>
+      </div>
+
+      <div id="af-error" style="color:var(--critical);font-size:11px;margin-top:12px;min-height:16px;font-weight:600;"></div>
+      <div style="display:flex;gap:8px;margin-top:16px;justify-content:flex-end;">
+        <button onclick="closeAddFixture()" style="background:var(--surface2);color:var(--text2);border:1.5px solid var(--border2);border-radius:6px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;">Cancel</button>
+        <button onclick="submitAddFixture()" style="background:var(--navy);color:#fff;border:none;border-radius:6px;padding:8px 22px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+          <span id="af-submit-icon">✓</span> <span id="af-submit-txt">Add to Fleet &amp; Sync Sheets</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 </div><!-- /app -->
 
 <!-- DETAIL PANEL -->
@@ -672,9 +823,14 @@ function drawTimeline(){
   rows.forEach((v,ri)=>{
     const stCls='st-'+v.status.toLowerCase();
     const col=firmColor(v);
-    const minI=mIdx(v.minSerial),maxI=mIdx(v.maxSerial);
+    // Use nearest-month approximation for bar edges so bars always render
+    // even when exact month isn't in visible range
+    const minI=mIdxApprox(v.minSerial);
+    const maxI=mIdxApprox(v.maxSerial);
     const popI=mIdxApprox(v.popDeclSerial),perI=mIdxApprox(v.perOptSerial);
     const isOvd=v.status==='OVERDUE';
+    // Only show optional bar if maxDate is genuinely after minDate
+    const hasOpt = maxI>=0 && minI>=0 && maxI>minI;
     const rowBg=ri%2===0?'#fff':'#f8f9fc';
 
     h+=`<tr class="tl-row ${stCls}">`;
@@ -703,10 +859,11 @@ function drawTimeline(){
       let bg='',tdStyle='';
 
       if(v.isEg){
+        // Evergreen: solid firm colour across all visible months
         bg=col.firm;
         tdStyle=`background:${bg};`;
       } else if(isOvd){
-        // Past min → show optional zone bar (charterer deciding when to redeliver)
+        // Past min, still within max → optional zone bar
         if(maxI<0||ci<=maxI){
           bg=col.opt;
           tdStyle=`background:${bg};opacity:${col.optA};`;
@@ -714,10 +871,13 @@ function drawTimeline(){
           tdStyle=`background:${rowBg};`;
         }
       } else {
+        // Firm period: from col 0 → minI
         if(minI>=0&&ci<=minI){
           bg=col.firm;
           tdStyle=`background:${bg};`;
-        } else if(maxI>=0&&ci>minI&&ci<=maxI){
+        }
+        // Optional period: ONLY if vessel genuinely has a max period after min
+        else if(hasOpt&&ci>minI&&ci<=maxI){
           bg=col.opt;
           tdStyle=`background:${bg};opacity:${col.optA};`;
         } else {
@@ -878,7 +1038,7 @@ function openP(idx){
     <div class="ps">
       <div class="pst" style="display:flex;align-items:center;justify-content:space-between">
         <span>✏️ Edit Details</span>
-        <span style="font-size:8px;font-weight:400;color:var(--muted)">Changes sync to Google Sheets</span>
+        <span style="font-size:8px;font-weight:400;color:var(--muted)">Syncs to Google Sheets on save</span>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
         <div>
@@ -922,7 +1082,22 @@ function openP(idx){
           <input class="ei" id="ef-duration" value="${v.duration||''}" placeholder="e.g. 5Y+1Y+1Y">
         </div>
         <div style="grid-column:1/-1">
-          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">REDELIVERY NOTICE (days)</div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">PERIOD OPT. DECLARE BY <span style="font-weight:400;color:var(--muted)">(DD Mon YYYY or serial)</span></div>
+          <input class="ei" id="ef-per-opt" value="${v.perOptDate||v.perOptStr||''}" placeholder="e.g. 15 Mar 2027">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">PURCHASE OPTION (POP)</div>
+          <select class="ei" id="ef-pop" onchange="togglePopDecl(${idx})">
+            <option value="no" ${!v.hasPOP?'selected':''}>No</option>
+            <option value="yes" ${v.hasPOP?'selected':''}>Yes</option>
+          </select>
+        </div>
+        <div id="ef-pop-decl-wrap" style="${v.hasPOP?'':'display:none'}">
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">POP DECLARE BY</div>
+          <input class="ei" id="ef-pop-decl" value="${v.popDeclDate||''}" placeholder="e.g. 01 Jun 2027">
+        </div>
+        <div style="grid-column:1/-1">
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">REDELIVERY NOTICE</div>
           <input class="ei" id="ef-notice" value="${v.notice||''}" placeholder="e.g. 60/45/30/15">
         </div>
         <div style="grid-column:1/-1">
@@ -930,8 +1105,8 @@ function openP(idx){
           <input class="ei" id="ef-chain" value="${v.chain||''}" placeholder="e.g. Owner - SSY NP - Charterer">
         </div>
         <div style="grid-column:1/-1">
-          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">NOTES / REMARKS (local only)</div>
-          <textarea class="ei" id="ef-notes" rows="3" style="resize:vertical" placeholder="Internal notes — not synced to sheet">${v.notes||''}</textarea>
+          <div style="font-size:9px;color:var(--muted);font-weight:600;margin-bottom:2px">NOTES / REMARKS <span style="font-weight:400">(local only)</span></div>
+          <textarea class="ei" id="ef-notes" rows="2" style="resize:vertical" placeholder="Internal notes — not synced to sheet">${v.notes||''}</textarea>
         </div>
       </div>
       <div style="display:flex;gap:6px;align-items:center">
@@ -965,26 +1140,35 @@ async function saveE(idx){
   const newChain     = get('ef-chain')?.value.trim()     || v.chain;
   const newDuration  = get('ef-duration')?.value.trim()  || v.duration;
   const newNotes     = get('ef-notes')?.value.trim()     || '';
+  const newPerOpt    = get('ef-per-opt')?.value.trim()   || '';
+  const newPopYN     = get('ef-pop')?.value === 'yes';
+  const newPopDecl   = get('ef-pop-decl')?.value.trim()  || '';
 
-  if(newSize      !== v.size)       fields.size       = newSize;
-  if(newType      !== v.type)       fields.type       = newType;
-  if(newHire      !== v.hire)       fields.hire       = newHire;
-  if(newOpt1      !== v.opt1hire)   fields.opt1hire   = newOpt1;
-  if(newOpt2      !== v.opt2hire)   fields.opt2hire   = newOpt2;
-  if(newOpt3      !== v.opt3hire)   fields.opt3hire   = newOpt3;
-  if(newOwner     !== v.owner)      fields.owner      = newOwner;
-  if(newCharterer !== v.charterer)  fields.charterer  = newCharterer;
-  if(newFinancier !== v.financier)  fields.financier  = newFinancier;
-  if(newNotice    !== v.notice)     fields.notice     = newNotice;
-  if(newChain     !== v.chain)      fields.chain      = newChain;
-  if(newDuration  !== v.duration)   fields.duration   = newDuration;
+  if(newSize      !== v.size)                     fields.size       = newSize;
+  if(newType      !== v.type)                     fields.type       = newType;
+  if(newHire      !== v.hire)                     fields.hire       = newHire;
+  if(newOpt1      !== v.opt1hire)                 fields.opt1hire   = newOpt1;
+  if(newOpt2      !== v.opt2hire)                 fields.opt2hire   = newOpt2;
+  if(newOpt3      !== v.opt3hire)                 fields.opt3hire   = newOpt3;
+  if(newOwner     !== v.owner)                    fields.owner      = newOwner;
+  if(newCharterer !== v.charterer)                fields.charterer  = newCharterer;
+  if(newFinancier !== v.financier)                fields.financier  = newFinancier;
+  if(newNotice    !== v.notice)                   fields.notice     = newNotice;
+  if(newChain     !== v.chain)                    fields.chain      = newChain;
+  if(newDuration  !== v.duration)                 fields.duration   = newDuration;
+  if(newPerOpt    !== (v.perOptDate||v.perOptStr||'')) fields.perOptDecl = newPerOpt;
+  if(newPopYN     !== v.hasPOP)                   fields.pop        = newPopYN ? 'Yes' : 'No';
+  if(newPopDecl   !== (v.popDeclDate||''))        fields.popDecl    = newPopDecl;
 
   // Update local state immediately (optimistic UI)
   Object.assign(v, {
     size:newSize, type:newType, hire:newHire,
     opt1hire:newOpt1, opt2hire:newOpt2, opt3hire:newOpt3,
     owner:newOwner, charterer:newCharterer, financier:newFinancier,
-    notice:newNotice, chain:newChain, duration:newDuration, notes:newNotes
+    notice:newNotice, chain:newChain, duration:newDuration, notes:newNotes,
+    perOptDate:newPerOpt, perOptStr:newPerOpt,
+    hasPOP:newPopYN, popStr:newPopYN?'Yes':'No',
+    popDeclDate:newPopDecl
   });
 
   const msg = document.getElementById('sv-msg');
@@ -1030,6 +1214,12 @@ async function saveE(idx){
 
   popDDs(); applyF();
 }
+function togglePopDecl(idx){
+  const sel = document.getElementById('ef-pop');
+  const wrap = document.getElementById('ef-pop-decl-wrap');
+  if(sel && wrap) wrap.style.display = sel.value==='yes' ? '' : 'none';
+}
+
 function closeP(){document.getElementById('det-pan').classList.remove('open');document.getElementById('det-ov').classList.remove('open');}
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
@@ -1078,6 +1268,136 @@ async function autoFetch(){
     loadBuiltIn();
   }
 }
+
+// ── ADD FIXTURE ───────────────────────────────────────────────────────────────
+function openAddFixture(){
+  // Clear all fields
+  ['af-name','af-dwt','af-built','af-builder','af-financier','af-owner','af-charterer',
+   'af-chain','af-delivery','af-deliv-time','af-duration','af-hire','af-opt1','af-opt2',
+   'af-min','af-min-time','af-max','af-notice','af-per-opt','af-pop-decl'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  ['af-type','af-size','af-pop'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value = id==='af-pop'?'no':'';
+  });
+  document.getElementById('af-pop-decl-wrap').style.display='none';
+  document.getElementById('af-error').textContent='';
+  document.getElementById('af-submit-txt').textContent='Add to Fleet & Sync Sheets';
+  document.getElementById('af-submit-icon').textContent='✓';
+  document.getElementById('af-overlay').style.display='block';
+}
+
+function closeAddFixture(){
+  document.getElementById('af-overlay').style.display='none';
+}
+
+async function submitAddFixture(){
+  const get=id=>document.getElementById(id)?.value?.trim()||'';
+  const err=document.getElementById('af-error');
+  err.textContent='';
+
+  // Validation
+  if(!get('af-name'))   { err.textContent='⚠ Vessel name is required.'; return; }
+  if(!get('af-type'))   { err.textContent='⚠ Please select a type.'; return; }
+  if(!get('af-size'))   { err.textContent='⚠ Please select a size.'; return; }
+  if(!get('af-owner'))  { err.textContent='⚠ Owner is required.'; return; }
+  if(!get('af-charterer')){ err.textContent='⚠ Charterer is required.'; return; }
+  if(!get('af-hire'))   { err.textContent='⚠ Hire rate is required.'; return; }
+
+  const hasPOP = document.getElementById('af-pop')?.value === 'yes';
+
+  const newVessel = {
+    idx:      Date.now(), // temporary local idx
+    sn:       null,
+    name:     get('af-name'),
+    type:     get('af-type'),
+    size:     get('af-size'),
+    dwt:      parseFloat(get('af-dwt')) || null,
+    built:    get('af-built'),
+    builder:  get('af-builder'),
+    financier:get('af-financier'),
+    owner:    get('af-owner'),
+    charterer:get('af-charterer'),
+    chain:    get('af-chain'),
+    delivDate:get('af-delivery'),
+    delivTime:get('af-deliv-time'),
+    duration: get('af-duration'),
+    hire:     parseFloat(get('af-hire')) || null,
+    opt1hire: parseFloat(get('af-opt1')) || null,
+    opt2hire: parseFloat(get('af-opt2')) || null,
+    minDate:  get('af-min'),
+    minTimeGMT:get('af-min-time'),
+    maxDate:  get('af-max'),
+    isEg:     get('af-max').toLowerCase()==='evergreen'||!get('af-max'),
+    notice:   get('af-notice'),
+    perOptDate:get('af-per-opt'),
+    hasPOP,
+    popStr:   hasPOP?'Yes':'No',
+    popDeclDate:hasPOP?get('af-pop-decl'):'',
+    status:   'TBD',
+    daysToMin:null,
+    tbd:      false,
+    notes:    ''
+  };
+
+  // Recalculate status from minDate
+  if(newVessel.minDate && newVessel.minDate.length > 0){
+    const parsed = new Date(newVessel.minDate.replace(/(\d+)\s(\w+)\s(\d+)/,'$2 $1 $3'));
+    if(!isNaN(parsed)){
+      const today=new Date();today.setHours(0,0,0,0);
+      const days=Math.round((parsed-today)/86400000);
+      newVessel.daysToMin=days;
+      if(days<0)          newVessel.status='OVERDUE';
+      else if(days<=60)   newVessel.status='CRITICAL';
+      else if(days<=120)  newVessel.status='WATCH';
+      else if(days<=180)  newVessel.status='UPCOMING';
+      else                newVessel.status='OK';
+    }
+  }
+
+  // Add to local fleet immediately
+  AV.push(newVessel);
+
+  // Update submit button
+  document.getElementById('af-submit-txt').textContent='Syncing to Sheets…';
+  document.getElementById('af-submit-icon').textContent='⏳';
+
+  // POST to Google Sheets
+  try {
+    const res = await fetch(SHEETS_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({
+        action:   'addFixture',
+        vessel:   newVessel
+      })
+    });
+    const json = await res.json();
+    if(json.error) throw new Error(json.message||'Apps Script error');
+
+    document.getElementById('af-submit-txt').textContent='Added ✅';
+    document.getElementById('af-submit-icon').textContent='';
+    err.style.color='var(--ok)';
+    err.textContent=`✅ ${newVessel.name} added to fleet and synced to Google Sheets (row ${json.newRow||'—'})`;
+
+    setTimeout(()=>{
+      closeAddFixture();
+      popDDs(); applyF(); upKPI();
+      err.textContent='';err.style.color='var(--critical)';
+    }, 2500);
+
+  } catch(e){
+    // Local add succeeded, sheet sync failed
+    document.getElementById('af-submit-txt').textContent='Add to Fleet & Sync Sheets';
+    document.getElementById('af-submit-icon').textContent='✓';
+    err.textContent=`⚠ Added locally but sheet sync failed: ${e.message}. Click Save again to retry.`;
+    // Don't close — let user retry
+    popDDs(); applyF(); upKPI();
+  }
+}
+
 </script>
 </body>
 </html>
