@@ -615,7 +615,11 @@ function applyF(){
     if(q&&!(v.name+' '+v.owner+' '+v.charterer+' '+v.size).toLowerCase().includes(q))return false;
     if(tf&&v.type!==tf)return false; if(sf&&v.size!==sf)return false;
     if(of&&v.owner!==of)return false; if(cf&&v.charterer!==cf)return false;
-    if(stf&&v.status!==stf)return false;
+    // Critical filter also includes Overdue vessels (past min = urgent, not a separate bucket to ignore)
+    if(stf){
+      const matchesStatus = stf==='CRITICAL' ? (v.status==='CRITICAL'||v.status==='OVERDUE') : v.status===stf;
+      if(!matchesStatus) return false;
+    }
     if(pf==='yes'&&!v.hasPOP)return false; if(pf==='no'&&v.hasPOP)return false;
     return true;
   });
@@ -631,7 +635,11 @@ function upKPI(){
   AV.forEach(v=>{c[v.status]=(c[v.status]||0)+1;});
   ['CRITICAL','WATCH','UPCOMING','OK','EVERGREEN','OVERDUE'].forEach(k=>{
     const el=document.getElementById('kv-'+k.toLowerCase());
-    if(el)el.textContent=c[k]+(k==='OK'?'+'+c.TBD:'');
+    if(el){
+      // Critical tile also counts OVERDUE vessels — past-min vessels are urgent, not forgotten
+      const val = k==='CRITICAL' ? c.CRITICAL + c.OVERDUE : c[k];
+      el.textContent = val + (k==='OK'?'+'+c.TBD:'');
+    }
   });
 }
 function upAlert(){
@@ -669,8 +677,15 @@ function drawActions(){
   const today=new Date();today.setHours(0,0,0,0);
   const events=[];
   FV.forEach(v=>{
-    // Min period
-    if(v.minSerial){
+    // OVERDUE — past min redelivery, charterer can return vessel any day.
+    // This is the MOST urgent bucket, not a forgotten one, so it always surfaces here.
+    if(v.status==='OVERDUE'&&v.minSerial){
+      const d=exD(v.minSerial),days=dfT(d); // negative number
+      events.push({v,type:'OVERDUE',label:'⚠ Past Min — Awaiting Redelivery',days,date:d,cls:'ev-min',
+        urgCls:'urg-critical',dayCls:'d-cr',isOverdue:true});
+    }
+    // Min period approaching (0-90 days out)
+    if(v.minSerial&&v.status!=='OVERDUE'){
       const d=exD(v.minSerial),days=dfT(d);
       if(days!==null&&days>=0&&days<=90)
         events.push({v,type:'MIN',label:'Min Redelivery',days,date:d,cls:'ev-min',
@@ -692,16 +707,26 @@ function drawActions(){
           urgCls:'urg-perdecl',dayCls:days<=30?'d-cr':days<=60?'d-wa':'d-up'});
     }
   });
-  events.sort((a,b)=>a.days-b.days);
+  // Sort: overdue vessels first (most negative days = longest overdue = most urgent),
+  // then everything else by soonest days
+  events.sort((a,b)=>{
+    if(a.isOverdue&&!b.isOverdue)return -1;
+    if(!a.isOverdue&&b.isOverdue)return 1;
+    if(a.isOverdue&&b.isOverdue)return a.days-b.days; // most negative (longest overdue) first
+    return a.days-b.days;
+  });
   const el=document.getElementById('action-cards');
   if(!events.length){el.innerHTML='<div class="no-actions">✅ No critical actions due in the next 90 days.</div>';return;}
-  el.innerHTML=events.map(e=>`
+  el.innerHTML=events.map(e=>{
+    const dayLabel = e.isOverdue ? `+${Math.abs(e.days)}d overdue` : `${e.days}d`;
+    return `
     <div class="ac-card ${e.urgCls}" onclick="openP(${e.v.idx})">
       <div class="ac-name"><span class="ac-size">${e.v.size}</span>${e.v.name}</div>
       <div class="ac-event ${e.cls}">${e.label}</div>
-      <div class="ac-date">${fd(e.date)} GMT</div>
-      <div class="ac-days ${e.dayCls}">${e.days}d</div>
-    </div>`).join('');
+      <div class="ac-date">${e.isOverdue?'Min was: ':''}${fd(e.date)} GMT</div>
+      <div class="ac-days ${e.dayCls}">${dayLabel}</div>
+    </div>`;
+  }).join('');
 }
 
 // ── PANEL 2: CALENDAR ─────────────────────────────────────────────────────────
