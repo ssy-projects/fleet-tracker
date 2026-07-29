@@ -563,6 +563,14 @@ function doLogout(){sessionStorage.removeItem('sa');location.reload();}
 const EE=new Date(1899,11,30);
 function exD(s){if(!s||isNaN(s)||Number(s)<=0)return null;const d=new Date(EE);d.setDate(d.getDate()+Math.round(Number(s)));return d;}
 function fd(d){if(!d)return '—';return d instanceof Date?d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}):d;}
+function fdShort(d){
+  if(!d) return '—';
+  if(!(d instanceof Date)) return d;
+  const dd=d.getDate().toString().padStart(2,'0');
+  const mon=d.toLocaleDateString('en-GB',{month:'short'});
+  const yy=String(d.getFullYear()).slice(-2);
+  return `${dd} ${mon} '${yy}`;
+}
 function dfT(d){if(!d)return null;const t=new Date();t.setHours(0,0,0,0);return Math.round((new Date(d)-t)/86400000);}
 
 // ── STATE ─────────────────────────────────────────────────────────────────────
@@ -714,6 +722,19 @@ function drawActions(){
   if(!events.length){el.innerHTML='<div class="no-actions">✅ No critical actions due in the next 90 days.</div>';return;}
   el.innerHTML=events.map(e=>{
     const dayLabel = e.isOverdue ? `+${Math.abs(e.days)}d overdue` : `${e.days}d`;
+
+    // Build the date line — Min/Max range for redelivery events, single date for declarations
+    let dateLine;
+    if(e.type==='OVERDUE'||e.type==='MIN'){
+      const minD = exD(e.v.minSerial);
+      const maxD = e.v.maxSerial ? exD(e.v.maxSerial) : null;
+      const maxTxt = maxD ? fdShort(maxD) : (e.v.isEg ? 'Evergreen' : '—');
+      dateLine = `Min ${fdShort(minD)} / Max ${maxTxt}`;
+    } else {
+      // POP or Period Option declaration — single deadline date
+      dateLine = `Declare by ${fdShort(e.date)}`;
+    }
+
     return `
     <div class="ac-card ${e.urgCls}" onclick="openP(${e.v.idx})">
       <div class="ac-top">
@@ -722,7 +743,7 @@ function drawActions(){
       </div>
       <div class="ac-name">${e.v.name}</div>
       <div class="ac-event">${e.label}</div>
-      <div class="ac-date">${e.isOverdue?'Min was: ':''}${fd(e.date)} GMT</div>
+      <div class="ac-date">${dateLine}</div>
     </div>`;
   }).join('');
 }
